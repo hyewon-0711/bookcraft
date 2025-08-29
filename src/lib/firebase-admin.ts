@@ -1,21 +1,39 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app'
 import { getMessaging } from 'firebase-admin/messaging'
 
-// Firebase Admin SDK 초기화
+// Firebase Admin SDK 초기화 (Vercel 배포 최적화)
 if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  }
+  try {
+    const serviceAccount = {
+      projectId: process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL || process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: (process.env.FIREBASE_ADMIN_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY)?.replace(/\\n/g, '\n'),
+    }
 
-  initializeApp({
-    credential: cert(serviceAccount),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  })
+    // 필수 환경 변수 확인
+    if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+      console.warn('Firebase Admin 환경 변수가 설정되지 않았습니다. 푸시 알림 기능이 비활성화됩니다.')
+    } else {
+      initializeApp({
+        credential: cert(serviceAccount),
+        projectId: serviceAccount.projectId,
+      })
+      console.log('Firebase Admin SDK 초기화 완료')
+    }
+  } catch (error) {
+    console.error('Firebase Admin SDK 초기화 실패:', error)
+  }
 }
 
-const messaging = getMessaging()
+// Firebase Messaging 초기화 (안전한 처리)
+let messaging: any = null
+try {
+  if (getApps().length > 0) {
+    messaging = getMessaging()
+  }
+} catch (error) {
+  console.warn('Firebase Messaging 초기화 실패:', error)
+}
 
 export interface PushNotificationData {
   title: string

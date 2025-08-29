@@ -1,16 +1,27 @@
 import { Pool, PoolClient } from 'pg'
 
 // PostgreSQL 연결 풀 생성
-const pool = new Pool({
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DB || 'gowthai',
-  user: process.env.POSTGRES_USER || 'hyewon87',
-  password: process.env.POSTGRES_PASSWORD || 'lg20995192',
-  max: 20, // 최대 연결 수
-  idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
-  connectionTimeoutMillis: 2000, // 연결 타임아웃
-})
+// Vercel 배포 시 DATABASE_URL 환경 변수 우선 사용
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20, // 최대 연결 수
+        idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
+        connectionTimeoutMillis: 10000, // 연결 타임아웃 (Vercel용 증가)
+      }
+    : {
+        host: process.env.POSTGRES_HOST || 'localhost',
+        port: parseInt(process.env.POSTGRES_PORT || '5432'),
+        database: process.env.POSTGRES_DB || 'bookcraft',
+        user: process.env.POSTGRES_USER || 'postgres',
+        password: process.env.POSTGRES_PASSWORD || 'password',
+        max: 20, // 최대 연결 수
+        idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
+        connectionTimeoutMillis: 2000, // 연결 타임아웃
+      }
+)
 
 // 데이터베이스 연결 테스트
 export async function testConnection(): Promise<boolean> {
