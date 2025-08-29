@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/quests/expire",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/quests/expire?type=notifications",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/quests/expire/route.ts": {
+      "maxDuration": 300
+    }
+  },
+  "env": {
+    "CRON_API_KEY": "@cron_api_key"
+  }
+}
