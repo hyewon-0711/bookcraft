@@ -2,9 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Vercel 배포 최적화
-  experimental: {
-    serverComponentsExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken']
-  },
+  serverExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
   
   // 이미지 최적화
   images: {
@@ -22,8 +20,7 @@ const nextConfig: NextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   
-  // 빌드 최적화
-  swcMinify: true,
+  // 빌드 최적화 (Next.js 15에서는 기본값)
   
   // API 라우트 설정
   async headers() {
